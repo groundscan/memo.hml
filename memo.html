@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QL-B Test Bore Clearance Memo - Groundscan Services & Maintenance</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            border-bottom: 3px solid #0056b3;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            /* Added for logos/stickers */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .title-block {
+            flex-grow: 1;
+            text-align: center;
+        }
+        .header img {
+            max-width: 15%; /* Limit size of images */
+            height: auto;
+        }
+        .memo-content label {
+            font-weight: 600;
+            color: #2c5282;
+            margin-top: 8px;
+            display: block;
+        }
+        .memo-content input[type="text"], .memo-content input[type="date"], .memo-content textarea, .memo-content select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            margin-top: 4px;
+            box-sizing: border-box;
+            background-color: #f7fafc;
+        }
+        .service-entry, .photo-entry {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .print-only {
+            display: none;
+        }
+        /* Custom styles for checkbox appearance */
+        .form-checkbox {
+            appearance: none;
+            display: inline-block;
+            vertical-align: middle;
+            height: 1.25rem;
+            width: 1.25rem;
+            border: 2px solid #3b82f6; /* Blue border */
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        }
+        .form-checkbox:checked {
+            background-color: #3b82f6; /* Blue background when checked */
+            border-color: #3b82f6;
+        }
+        .form-checkbox:checked::after {
+            content: '✓';
+            display: block;
+            color: white;
+            font-weight: bold;
+            font-size: 0.75rem;
+            line-height: 1;
+            text-align: center;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+                max-width: none;
+                border: none;
+            }
+            .print-only {
+                display: block;
+            }
+            .header {
+                border-bottom: 3px solid #0056b3;
+            }
+            textarea {
+                min-height: 50px; /* Ensure textareas print content clearly */
+                height: auto !important;
+                overflow: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="memoContainer">
+        <div class="header">
+            <!-- 1. Groundscan Logo Placeholder (Replace URL with your actual logo image) -->
+            <img src="https://placehold.co/150x50/0056b3/ffffff?text=GROUNDSCAN+Logo" alt="Groundscan Logo" class="h-12 w-auto">
+            
+            <div class="title-block">
+                <h1 class="text-3xl font-bold text-blue-800">QL-B Test Bore Clearance Memo</h1>
+                <p class="text-lg text-gray-600">**Groundscan Services & Maintenance** - Service Locating and SUI Verification</p>
+                <p class="text-sm text-gray-500 mt-1">ABN: 37 691 938 411 | Phone: 0423 407 793</p>
+            </div>
+            
+            <!-- 2. CERTLOC Sticker Placeholder (Replace URL with your actual sticker image) -->
+            <img src="https://placehold.co/80x80/007bff/ffffff?text=CERTLOC+CLO" alt="CERTLOC Certified Locator Sticker" class="h-20 w-auto">
+        </div>
+        
+        <!-- Status and Control Panel -->
+        <div class="no-print bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4 flex justify-between items-center text-sm">
+            <span id="authStatus" class="text-blue-700 font-semibold">Initializing...</span>
+            <input type="hidden" id="memoId" value="">
+            <div class="space-x-2 flex">
+                <button id="newMemoButton" class="px-3 py-1 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-150 font-semibold">
+                    <span id="newMemoText">New Memo</span>
+                </button>
+                <button id="saveMemoButton" class="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-150 font-semibold" disabled>
+                    Save Memo
+                </button>
+            </div>
+        </div>
+
+        <div class="memo-content">
+
+            <!-- Project & Site Information - SECTION 1 -->
+            <h2 class="text-xl font-semibold mb-3 text-blue-700 border-b pb-1">1. Project & Site Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="clientName">Client Name</label>
+                    <input type="text" id="clientName" placeholder="e.g., EnviroScience / Titan Communications">
+                </div>
+                <div>
+                    <label for="projectName">Project Name / Job Ref</label>
+                    <input type="text" id="projectName" placeholder="e.g., NOA Test Bores / 10627">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="siteAddress">Site Address / General Location (QL-D)</label>
+                    <input type="text" id="siteAddress" placeholder="e.g., 87 Culverson Road, Orange, NSW">
+                </div>
+                
+                <!-- NEW: BYDA Reference -->
+                <div>
+                    <label for="bydaRef">BYDA Sequence / Reference No.</label>
+                    <input type="text" id="bydaRef" placeholder="e.g., 51799157 (Required for Compliance)">
+                </div>
+                <!-- NEW: Ground/Weather Conditions -->
+                <div>
+                    <label for="groundCondition">Ground / Weather Condition</label>
+                    <input type="text" id="groundCondition" placeholder="e.g., Dry/Clay, Sunny/40°C, Wet/Muddy">
+                </div>
+                
+                <!-- GPS Row -->
+                <div class="col-span-1 md:col-span-2">
+                    <label for="gpsCoordinates">Test Bore GPS Coordinates (QL-C)</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="gpsCoordinates" placeholder="Latitude, Longitude (e.g., -33.2845, 149.1022)" class="flex-grow">
+                        <button id="markGpsButton" class="no-print px-4 py-2 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600 transition duration-150 whitespace-nowrap">
+                            Mark GPS Location
+                        </button>
+                    </div>
+                    <p id="gpsStatus" class="text-xs mt-1 text-gray-500 italic"></p>
+                </div>
+                
+                <div>
+                    <label for="locatingDate">Date of Clearance</label>
+                    <input type="date" id="locatingDate">
+                </div>
+                <div>
+                    <label for="boreholeRef">Borehole Reference (or General Area)</label>
+                    <input type="text" id="boreholeRef" placeholder="e.g., BH1, BH2, BH3 / Western Boundary">
+                </div>
+                <div>
+                    <label for="maxDepth">Proposed Max Depth (m)</label>
+                    <input type="text" id="maxDepth" placeholder="e.g., 3.0m">
+                </div>
+                <div>
+                    <label for="method">SUI Method Used (QL-B)</label>
+                    <select id="method" class="bg-white">
+                        <option value="EML & GPR" selected>EML (Electromagnetic) & GPR (Ground Penetrating Radar)</option>
+                        <option value="EML Only">EML (Electromagnetic) Only</option>
+                        <option value="GPR Only">GPR (Ground Penetrating Radar) Only</option>
+                        <option value="EML, GPR & Feature Map">EML, GPR, and Surface Feature Mapping</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SUI Methodology & Equipment - SECTION 2 -->
+            <h2 class="text-xl font-semibold mb-3 mt-6 text-blue-700 border-b pb-1">2. SUI Methodology & Equipment (QL-B)</h2>
+            <!-- Passive Scan Checklist -->
+            <div class="mb-4 p-4 rounded-lg bg-indigo-50 border border-indigo-200">
+                <label class="font-bold text-indigo-700 block mb-2">Mandatory Passive Sweeps Performed</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm" id="passiveChecks">
+                    <label class="flex items-center space-x-2 text-gray-700">
+                        <input type="checkbox" id="checkPassivePower" checked class="form-checkbox text-blue-600">
+                        <span>Passive Power</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-gray-700">
+                        <input type="checkbox" id="checkPassiveRadio" checked class="form-checkbox text-blue-600">
+                        <span>Passive Radio</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-gray-700">
+                        <input type="checkbox" id="checkPassiveMode" checked class="form-checkbox text-blue-600">
+                        <span>Passive Mode (Aux/CAT)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-gray-700">
+                        <input type="checkbox" id="checkGPRSweep" checked class="form-checkbox text-blue-600">
+                        <span>GPR Sweep</span>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-600 mt-2">All passive modes and GPR sweep are mandatory for a comprehensive QL-B assessment prior to active locating.</p>
+            </div>
+            
+            <!-- Equipment Used -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="md:col-span-1">
+                    <label for="eqEMLReceiver">EML Receiver</label>
+                    <input type="text" id="eqEMLReceiver" placeholder="e.g., Radiodetection RD8100 PDL">
+                </div>
+                <div class="md:col-span-1">
+                    <label for="eqEMLTransmitter">EML Transmitter</label>
+                    <input type="text" id="eqEMLTransmitter" placeholder="e.g., Radiodetection TX-10">
+                </div>
+                <div class="md:col-span-1">
+                    <label for="eqGPRUnit">GPR Unit</label>
+                    <input type="text" id="eqGPRUnit" placeholder="e.g., Geophysical Survey Systems GSSI SIR 4000">
+                </div>
+            </div>
+            
+            <!-- NEW: Locator Field Notes -->
+            <div class="mb-4">
+                <label for="locatorNotes">Locator Field Notes / Limitations Observed</label>
+                <textarea id="locatorNotes" rows="3" placeholder="Document any limitations encountered, such as high EM noise, shallow ground cover, or challenging soil conditions." class="bg-blue-50 border-blue-200"></textarea>
+            </div>
+
+            <!-- Clearance Status - SECTION 3 -->
+            <h2 class="text-xl font-semibold mb-3 mt-6 text-blue-700 border-b pb-1">3. Final Clearance Status (QL-B)</h2>
+            <div class="mb-4 p-4 rounded-lg shadow-inner" id="clearanceStatusBox">
+                <label for="clearanceStatus" class="text-xl">Clearance Outcome</label>
+                <select id="clearanceStatus" class="mt-2 p-2 border-2 text-xl font-bold" onchange="updateStatusColor()">
+                    <option value="CLEARED">CLEARED TO PROCEED</option>
+                    <option value="RESTRICTED">RESTRICTED - POTHOLING REQUIRED</option>
+                    <option value="NOT_CLEARED">NOT CLEARED - SERVICE CONFLICT</option>
+                </select>
+                <p class="mt-3 text-sm text-gray-700">The SUI assessment has determined the following status for vertical penetration at the specified location(s).</p>
+            </div>
+
+            <!-- Services Found - SECTION 4 -->
+            <h2 class="text-xl font-semibold mb-3 mt-6 text-blue-700 border-b pb-1">4. Services Located in Vicinity (QL-B)</h2>
+            <div id="serviceEntries">
+                <!-- Default Service Entry -->
+                <div class="service-entry grid grid-cols-1 md:grid-cols-4 gap-3 relative">
+                    <div class="md:col-span-1">
+                        <label>Asset Type</label>
+                        <input type="text" class="asset-type" placeholder="e.g., Telstra Copper / Unidentified GPR">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label>Owner / Marking</label>
+                        <input type="text" class="asset-owner" placeholder="e.g., Telstra / White">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label>Distance from Bore (m)</label>
+                        <input type="text" class="asset-distance" placeholder="e.g., 3.1m">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label>Depth (m)</label>
+                        <input type="text" class="asset-depth" placeholder="e.g., 0.6m (Estimated)">
+                    </div>
+                    <button class="remove-entry-btn absolute top-1 right-1 text-red-500 font-bold p-1 no-print" onclick="this.closest('.service-entry').remove()">X</button>
+                </div>
+            </div>
+            <button id="addServiceButton" class="no-print mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-150">Add Service Finding</button>
+
+            <!-- Site Photography - SECTION 5 -->
+            <h2 class="text-xl font-semibold mb-3 mt-6 text-blue-700 border-b pb-1">5. Site Photography (Required)</h2>
+            <div id="photoEntries">
+                <!-- Photo entries will be added here by JS -->
+            </div>
+            <button id="addPhotoButton" class="no-print mt-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-150">Add Site Photo Description</button>
+
+            <!-- Locator Certification - SECTION 6 -->
+            <h2 class="text-xl font-semibold mb-3 mt-6 text-blue-700 border-b pb-1">6. Locator Certification & Compliance</h2>
+
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="locatorName">Certified Locator Name</label>
+                        <input type="text" id="locatorName" value="Zane Somerville" readonly class="bg-gray-100">
+                    </div>
+                    <div>
+                        <label for="certBody">Certifying Body / Level</label>
+                        <input type="text" id="certBody" value="CERTLOC Certified Locator (CLO)" readonly class="bg-gray-100">
+                    </div>
+                    <div>
+                        <label for="certNumber">Certification No.</label>
+                        <input type="text" id="certNumber" value="00004732" readonly class="bg-gray-100">
+                    </div>
+                    <div>
+                        <label for="compNote">Compliance Note</label>
+                        <input type="text" id="compNote" value="Work complies with AS 5488-2019" readonly class="bg-gray-100 text-green-700 font-medium">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mandatory QL-A Condition -->
+            <div class="mb-4">
+                <label for="mandatoryNote">Mandatory Safety Condition for Excavation</label>
+                <textarea id="mandatoryNote" rows="3" class="bg-yellow-50 border-yellow-400 text-red-700" readonly>
+The clearance status is **strictly for small vertical test bores**. Any services located within 1.0 meter of the bore centre MUST be exposed via **Potholing (QL-A)** prior to drilling.
+                </textarea>
+            </div>
+            
+            <!-- Signature Placeholder -->
+            <div class="border-t pt-4 mt-6">
+                <label>Locator Signature</label>
+                <div class="h-16 w-full bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center text-gray-500 italic">
+                    [Digital Signature Placeholder]
+                </div>
+            </div>
+
+            <!-- Print Button -->
+            <div class="no-print mt-6 text-center">
+                <button id="printMemoButton" class="px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:bg-green-700 transition duration-150">Save & Generate PDF</button>
+            </div>
+            
+            <!-- Disclaimer (Print Only) -->
+            <div class="print-only mt-6 text-xs text-gray-500 border-t pt-2">
+                <p>DISCLAIMER: This memo confirms QL-B SUI clearance for the specified test bore location(s) only. The information provided is indicative. Groundscan Services & Maintenance expressly disclaims all liability for errors or omissions arising from reliance on this information without undertaking QL-A potholing where services are in close proximity.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set log level to debug for better console output
+        setLogLevel('debug');
+
+        // Global Firebase and App variables
+        let app, db, auth, userId;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const AUTH_STATUS = document.getElementById('authStatus');
+        const SAVE_BUTTON = document.getElementById('saveMemoButton');
+        const NEW_BUTTON = document.getElementById('newMemoButton');
+        const PRINT_BUTTON = document.getElementById('printMemoButton');
+        const MEMO_ID_INPUT = document.getElementById('memoId');
+
+        // Firestore Path Helpers
+        const getWipDocRef = () => {
+            return doc(db, 'artifacts', appId, 'users', userId, 'wip_memo', 'current_bore_wip');
+        };
+        const getMemoDocRef = (id) => {
+            return doc(db, 'artifacts', appId, 'users', userId, 'memos', id);
+        };
+        
+        // --- DATA COLLECTION AND APPLICATION FUNCTIONS ---
+        
+        // Collects all form data into a structured object
+        const collectMemoData = () => {
+            const serviceEntries = Array.from(document.querySelectorAll('#serviceEntries .service-entry')).map(entry => ({
+                type: entry.querySelector('.asset-type').value,
+                owner: entry.querySelector('.asset-owner').value,
+                distance: entry.querySelector('.asset-distance').value,
+                depth: entry.querySelector('.asset-depth').value,
+            }));
+
+            const photoEntries = Array.from(document.querySelectorAll('#photoEntries .photo-entry')).map(entry => ({
+                description: entry.querySelector('textarea').value,
+            }));
+
+            const passiveChecks = {
+                power: document.getElementById('checkPassivePower').checked,
+                radio: document.getElementById('checkPassiveRadio').checked,
+                mode: document.getElementById('checkPassiveMode').checked,
+                gpr: document.getElementById('checkGPRSweep').checked,
+            };
+
+            return {
+                clientName: document.getElementById('clientName').value,
+                projectName: document.getElementById('projectName').value,
+                siteAddress: document.getElementById('siteAddress').value,
+                bydaRef: document.getElementById('bydaRef').value,
+                groundCondition: document.getElementById('groundCondition').value,
+                gpsCoordinates: document.getElementById('gpsCoordinates').value,
+                locatingDate: document.getElementById('locatingDate').value,
+                boreholeRef: document.getElementById('boreholeRef').value,
+                maxDepth: document.getElementById('maxDepth').value,
+                method: document.getElementById('method').value,
+                passiveChecks: passiveChecks,
+                eqEMLReceiver: document.getElementById('eqEMLReceiver').value,
+                eqEMLTransmitter: document.getElementById('eqEMLTransmitter').value,
+                eqGPRUnit: document.getElementById('eqGPRUnit').value,
+                locatorNotes: document.getElementById('locatorNotes').value,
+                clearanceStatus: document.getElementById('clearanceStatus').value,
+                services: serviceEntries,
+                photos: photoEntries,
+                locatorName: document.getElementById('locatorName').value,
+                certNumber: document.getElementById('certNumber').value,
+            };
+        };
+
+        // Populates the form with data from a structured object
+        const applyMemoData = (data) => {
+            if (!data) return;
+
+            // Simple fields
+            document.getElementById('clientName').value = data.clientName || '';
+            document.getElementById('projectName').value = data.projectName || '';
+            document.getElementById('siteAddress').value = data.siteAddress || '';
+            document.getElementById('bydaRef').value = data.bydaRef || '';
+            document.getElementById('groundCondition').value = data.groundCondition || '';
+            document.getElementById('gpsCoordinates').value = data.gpsCoordinates || '';
+            document.getElementById('locatingDate').value = data.locatingDate || '';
+            document.getElementById('boreholeRef').value = data.boreholeRef || '';
+            document.getElementById('maxDepth').value = data.maxDepth || '';
+            document.getElementById('method').value = data.method || 'EML & GPR';
+            document.getElementById('locatorNotes').value = data.locatorNotes || '';
+            document.getElementById('clearanceStatus').value = data.clearanceStatus || 'CLEARED';
+            window.updateStatusColor(); // Update color based on status
+
+            // Passive Checks
+            if (data.passiveChecks) {
+                document.getElementById('checkPassivePower').checked = data.passiveChecks.power;
+                document.getElementById('checkPassiveRadio').checked = data.passiveChecks.radio;
+                document.getElementById('checkPassiveMode').checked = data.passiveChecks.mode;
+                document.getElementById('checkGPRSweep').checked = data.passiveChecks.gpr;
+            }
+
+            // Equipment
+            document.getElementById('eqEMLReceiver').value = data.eqEMLReceiver || '';
+            document.getElementById('eqEMLTransmitter').value = data.eqEMLTransmitter || '';
+            document.getElementById('eqGPRUnit').value = data.eqGPRUnit || '';
+
+            // Dynamic Lists (Services)
+            const serviceContainer = document.getElementById('serviceEntries');
+            serviceContainer.innerHTML = ''; // Clear existing
+            if (data.services && data.services.length > 0) {
+                data.services.forEach(s => window.addServiceEntry(s));
+            } else {
+                window.addServiceEntry({}); // Add one default blank entry
+            }
+
+            // Dynamic Lists (Photos)
+            const photoContainer = document.getElementById('photoEntries');
+            photoContainer.innerHTML = ''; // Clear existing
+            if (data.photos && data.photos.length > 0) {
+                data.photos.forEach(p => window.addPhotoEntry(p));
+            } else {
+                window.addPhotoEntry({}); // Add one default blank entry
+            }
+        };
+
+        // --- FIREBASE INTERACTION FUNCTIONS ---
+
+        const saveMemo = async (isFinal = false) => {
+            if (!db || !userId) {
+                AUTH_STATUS.textContent = 'Error: Authentication not ready.';
+                return;
+            }
+            
+            SAVE_BUTTON.textContent = 'Saving...';
+            SAVE_BUTTON.disabled = true;
+
+            try {
+                const memoData = collectMemoData();
+                memoData.timestamp = serverTimestamp();
+                memoData.userId = userId;
+
+                let docRef;
+
+                if (isFinal) {
+                    // Final save goes to a permanent, unique ID (using the current boreRef as a suggestion)
+                    let memoId = MEMO_ID_INPUT.value || crypto.randomUUID();
+                    docRef = getMemoDocRef(memoId);
+                    await setDoc(docRef, memoData);
+                    MEMO_ID_INPUT.value = memoId; // Ensure ID is set for print context
+                    AUTH_STATUS.textContent = `Memo ID ${memoId.substring(0, 8)} saved successfully.`;
+                    
+                    // Clear the WIP entry after a final save
+                    await setDoc(getWipDocRef(), {
+                        memoId: '', // Clear WIP ID
+                        timestamp: serverTimestamp(),
+                        userId: userId,
+                    });
+                    
+                } else {
+                    // Draft save goes to the single WIP document
+                    docRef = getWipDocRef();
+                    await setDoc(docRef, memoData);
+                    AUTH_STATUS.textContent = `Draft saved automatically.`;
+                }
+            } catch (error) {
+                console.error("Error saving memo: ", error);
+                AUTH_STATUS.textContent = `Save failed: ${error.message}`;
+            } finally {
+                SAVE_BUTTON.textContent = 'Save Memo';
+                SAVE_BUTTON.disabled = false;
+            }
+        };
+
+        const loadWIPMemo = async () => {
+            if (!db || !userId) return;
+            AUTH_STATUS.textContent = 'Loading Work in Progress...';
+            
+            try {
+                const wipDoc = await getDoc(getWipDocRef());
+                if (wipDoc.exists()) {
+                    const data = wipDoc.data();
+                    if (data && data.clientName) { // Check for meaningful data
+                        applyMemoData(data);
+                        // The WIP document doesn't need a formal memoId for the permanent collection, but we keep the form filled.
+                        AUTH_STATUS.textContent = `WIP loaded for ${data.clientName || 'Unnamed Client'}.`;
+                        NEW_BUTTON.querySelector('span').textContent = 'New Memo';
+                    } else {
+                         // If WIP exists but is empty/cleared, start new
+                         startNewMemo();
+                         AUTH_STATUS.textContent = `Ready. Start a new QL-B clearance.`;
+                    }
+                } else {
+                    startNewMemo();
+                    AUTH_STATUS.textContent = `Ready. Start a new QL-B clearance.`;
+                }
+            } catch (error) {
+                console.error("Error loading WIP: ", error);
+                AUTH_STATUS.textContent = `Error loading WIP: ${error.message}`;
+                startNewMemo(); // Fallback to new memo
+            }
+        };
+
+        // --- UI / LIFE CYCLE FUNCTIONS ---
+
+        const startNewMemo = () => {
+            // Clear all input fields and set defaults
+            document.querySelectorAll('.memo-content input[type="text"], .memo-content input[type="date"], .memo-content textarea').forEach(input => {
+                input.value = '';
+            });
+            document.getElementById('method').value = 'EML & GPR';
+            document.getElementById('clearanceStatus').value = 'CLEARED';
+            window.updateStatusColor();
+            
+            // Set required defaults
+            document.getElementById('locatingDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('locatorName').value = "Zane Somerville";
+            document.getElementById('certNumber').value = "00004732";
+
+            // Clear and reset dynamic lists
+            document.getElementById('serviceEntries').innerHTML = '';
+            window.addServiceEntry({}); // Add one default blank entry
+            document.getElementById('photoEntries').innerHTML = '';
+            window.addPhotoEntry({}); // Add one default blank entry
+
+            MEMO_ID_INPUT.value = crypto.randomUUID(); // Assign new ID for new work
+            AUTH_STATUS.textContent = `New Memo started (ID: ${MEMO_ID_INPUT.value.substring(0, 8)}).`;
+            NEW_BUTTON.querySelector('span').textContent = 'Clear Form';
+        };
+        
+        // Function to add a service finding entry
+        window.addServiceEntry = function(data = {}) {
+            const serviceEntries = document.getElementById('serviceEntries');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'service-entry grid grid-cols-1 md:grid-cols-4 gap-3 relative';
+            newEntry.innerHTML = `
+                <div class="md:col-span-1">
+                    <label>Asset Type</label>
+                    <input type="text" class="asset-type" value="${data.type || ''}" placeholder="e.g., Telstra Copper / Unidentified GPR">
+                </div>
+                <div class="md:col-span-1">
+                    <label>Owner / Marking</label>
+                    <input type="text" class="asset-owner" value="${data.owner || ''}" placeholder="e.g., Telstra / White">
+                </div>
+                <div class="md:col-span-1">
+                    <label>Distance from Bore (m)</label>
+                    <input type="text" class="asset-distance" value="${data.distance || ''}" placeholder="e.g., 0.8m">
+                </div>
+                <div class="md:col-span-1">
+                    <label>Depth (m)</label>
+                    <input type="text" class="asset-depth" value="${data.depth || ''}" placeholder="e.g., 0.6m (Verified)">
+                </div>
+                <button class="remove-entry-btn absolute top-1 right-1 text-red-500 font-bold p-1 no-print" onclick="this.closest('.service-entry').remove()">X</button>
+            `;
+            serviceEntries.appendChild(newEntry);
+        };
+
+        // Function to add a photo entry
+        window.addPhotoEntry = function(data = {}) {
+            const photoEntries = document.getElementById('photoEntries');
+            const newPhotoEntry = document.createElement('div');
+            newPhotoEntry.className = 'photo-entry p-3 mb-2 border rounded-lg bg-gray-50 relative';
+            newPhotoEntry.innerHTML = `
+                <label>Photo Description / Link</label>
+                <textarea rows="2" placeholder="e.g., Overview of BH1 showing clearance markings, or link to photo." class="w-full p-2 border rounded-md mt-1">${data.description || ''}</textarea>
+                <button class="remove-entry-btn absolute top-1 right-1 text-red-500
